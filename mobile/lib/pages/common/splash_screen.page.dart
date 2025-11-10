@@ -46,9 +46,15 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   }
 
   void resumeSessionLocal() async {
+    await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
     final backgroundManager = ref.read(backgroundSyncProvider);
     unawaited(backgroundManager.syncLocal(full: true));
     unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
+    final hasPermission = await ref.read(galleryPermissionNotifier.notifier).hasPermission;
+    if (hasPermission) {
+      // Resume backup (if enable) then navigate
+      await ref.watch(backupProvider.notifier).resumeBackup();
+    }
   }
 
   void resumeSession() async {
