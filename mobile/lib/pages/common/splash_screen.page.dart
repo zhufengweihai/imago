@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync_local.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
@@ -33,8 +33,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
         .read(authProvider.notifier)
         .setOpenApiServiceEndpoint()
         .then(logConnectionInfo)
-        .whenComplete(() => resumeSessionLocal());
-    //resumeSessionLocal();
+        .whenComplete(() => resumeSession());
   }
 
   void logConnectionInfo(String? endpoint) {
@@ -43,12 +42,6 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     }
 
     log.info("Resuming session at $endpoint");
-  }
-
-  void resumeSessionLocal() async {
-    final backgroundManager = ref.read(backgroundSyncProvider);
-    unawaited(backgroundManager.syncLocal(full: true));
-    unawaited(context.replaceRoute(Store.isBetaTimelineEnabled ? const TabShellRoute() : const TabControllerRoute()));
   }
 
   void resumeSession() async {
@@ -73,7 +66,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
                 bool syncSuccess = false;
                 await Future.wait([
                   backgroundManager.syncLocal(full: true),
-                  //backgroundManager.syncRemote().then((success) => syncSuccess = success),
+                  backgroundManager.syncRemote().then((success) => syncSuccess = success),
                 ]);
 
                 if (syncSuccess) {
