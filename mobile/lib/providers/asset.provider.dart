@@ -69,7 +69,7 @@ class AssetNotifier extends StateNotifier<bool> {
       final bool newRemote = await _assetService.refreshRemoteAssets();
       final bool newLocal = await _albumService.refreshDeviceAlbums();
       dPrint(() => "changedUsers: $changedUsers, newRemote: $newRemote, newLocal: $newLocal");
-      if (newRemote) {
+      if (newRemote || newLocal) {
         _ref.invalidate(memoryFutureProvider);
       }
 
